@@ -1,0 +1,7 @@
+require("Sella.remap")
+require("Sella.set")
+pcall(require, "Sella.telescope")
+pcall(require, "Sella.treesitter")
+pcall(require, "Sella.lsp")
+pcall(require, "Sella.harpoon")
+print("Hello from Neovim!")

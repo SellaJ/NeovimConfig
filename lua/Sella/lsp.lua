@@ -18,11 +18,20 @@ end)
 -- Setup Mason (LSP installer)
 require('mason').setup({})
 require('mason-lspconfig').setup({
-    ensure_installed = {'zls'},
+    ensure_installed = {'zls', 'clangd'},
     handlers = {
         lsp_zero.default_setup,
         zls = function()
             require('lspconfig').zls.setup({})
+        end,
+        clangd = function()
+            require('lspconfig').clangd.setup({
+                cmd = { "clangd" },
+                init_options = {
+                compilationDatabasePath = "build",
+                fallbackFlags = { "-std=c++20" },
+        },
+            })
         end,
     },
 })

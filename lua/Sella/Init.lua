@@ -1,5 +1,5 @@
-require("Sella.set")
 require("Sella.remap")
+require("Sella.set")
 pcall(require, "Sella.telescope")
 pcall(require, "Sella.treesitter")
 pcall(require, "Sella.lsp")

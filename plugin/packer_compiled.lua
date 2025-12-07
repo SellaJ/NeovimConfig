@@ -109,12 +109,6 @@ _G.packer_plugins = {
     path = "C:\\Users\\sella\\AppData\\Local\\nvim-data\\site\\pack\\packer\\start\\cmp_luasnip",
     url = "https://github.com/saadparwaiz1/cmp_luasnip"
   },
-  ["darkplus.nvim"] = {
-    config = { "\27LJ\2\nù\1\0\0\3\0\a\0\v6\0\0\0'\2\1\0B\0\2\0029\0\2\0005\2\3\0B\0\2\0016\0\4\0009\0\5\0'\2\6\0B\0\2\1K\0\1\0\25colorscheme darkplus\bcmd\bvim\1\0\3\24disable_nvimtree_bg\2\16transparent\1\20italic_comments\2\nsetup\rdarkplus\frequire\0" },
-    loaded = true,
-    path = "C:\\Users\\sella\\AppData\\Local\\nvim-data\\site\\pack\\packer\\start\\darkplus.nvim",
-    url = "https://github.com/lunarvim/darkplus.nvim"
-  },
   ["friendly-snippets"] = {
     loaded = true,
     path = "C:\\Users\\sella\\AppData\\Local\\nvim-data\\site\\pack\\packer\\start\\friendly-snippets",
@@ -170,6 +164,12 @@ _G.packer_plugins = {
     path = "C:\\Users\\sella\\AppData\\Local\\nvim-data\\site\\pack\\packer\\start\\telescope.nvim",
     url = "https://github.com/nvim-telescope/telescope.nvim"
   },
+  ["tokyonight.nvim"] = {
+    config = { "\27LJ\2\nÄ\1\0\0\3\0\a\0\v6\0\0\0'\2\1\0B\0\2\0029\0\2\0005\2\3\0B\0\2\0016\0\4\0009\0\5\0'\2\6\0B\0\2\1K\0\1\0!colorscheme tokyonight-night\bcmd\bvim\1\0\1\nstyle\nnight\nsetup\15tokyonight\frequire\0" },
+    loaded = true,
+    path = "C:\\Users\\sella\\AppData\\Local\\nvim-data\\site\\pack\\packer\\start\\tokyonight.nvim",
+    url = "https://github.com/folke/tokyonight.nvim"
+  },
   undotree = {
     loaded = true,
     path = "C:\\Users\\sella\\AppData\\Local\\nvim-data\\site\\pack\\packer\\start\\undotree",
@@ -183,10 +183,10 @@ _G.packer_plugins = {
 }
 
 time([[Defining packer_plugins]], false)
--- Config for: darkplus.nvim
-time([[Config for darkplus.nvim]], true)
-try_loadstring("\27LJ\2\nù\1\0\0\3\0\a\0\v6\0\0\0'\2\1\0B\0\2\0029\0\2\0005\2\3\0B\0\2\0016\0\4\0009\0\5\0'\2\6\0B\0\2\1K\0\1\0\25colorscheme darkplus\bcmd\bvim\1\0\3\24disable_nvimtree_bg\2\16transparent\1\20italic_comments\2\nsetup\rdarkplus\frequire\0", "config", "darkplus.nvim")
-time([[Config for darkplus.nvim]], false)
+-- Config for: tokyonight.nvim
+time([[Config for tokyonight.nvim]], true)
+try_loadstring("\27LJ\2\nÄ\1\0\0\3\0\a\0\v6\0\0\0'\2\1\0B\0\2\0029\0\2\0005\2\3\0B\0\2\0016\0\4\0009\0\5\0'\2\6\0B\0\2\1K\0\1\0!colorscheme tokyonight-night\bcmd\bvim\1\0\1\nstyle\nnight\nsetup\15tokyonight\frequire\0", "config", "tokyonight.nvim")
+time([[Config for tokyonight.nvim]], false)
 
 _G._packer.inside_compile = false
 if _G._packer.needs_bufread == true then

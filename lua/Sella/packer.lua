@@ -14,21 +14,30 @@ return require('packer').startup(function(use)
     }
 
     -- Color scheme (Visual Studio Dark-like theme)
+--    use({
+--        'lunarvim/darkplus.nvim',
+--        config = function()
+--            require('darkplus').setup({
+--                -- Enable transparent background
+--                transparent = false,
+--                -- Enable italic comment
+--                italic_comments = true,
+--                -- Disable nvim-tree background color
+--                disable_nvimtree_bg = true,
+--            })
+--            vim.cmd('colorscheme darkplus')
+--        end
+--    })
+    -- color scheme tokyo night
     use({
-        'lunarvim/darkplus.nvim',
+        'folke/tokyonight.nvim',
         config = function()
-            require('darkplus').setup({
-                -- Enable transparent background
-                transparent = false,
-                -- Enable italic comment
-                italic_comments = true,
-                -- Disable nvim-tree background color
-                disable_nvimtree_bg = true,
+            require('tokyonight').setup({
+               style = "storm" 
             })
-            vim.cmd('colorscheme darkplus')
+            vim.cmd('colorscheme tokyonight-storm')
         end
     })
-
     -- Treesitter for better syntax highlighting
     use('nvim-treesitter/nvim-treesitter', {run = ':TSUpdate'})
 

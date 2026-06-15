@@ -1,8 +1,8 @@
 local lsp_zero = require('lsp-zero')
 
 lsp_zero.on_attach(function(client, bufnr)
-    local opts = {buffer = bufnr, remap = false}
-    
+    local opts = { buffer = bufnr, remap = false }
+
     vim.keymap.set("n", "gd", function() vim.lsp.buf.definition() end, opts)
     vim.keymap.set("n", "gri", function() vim.lsp.buf.implementation() end, opts)
     vim.keymap.set("n", "K", function() vim.lsp.buf.hover() end, opts)
@@ -20,7 +20,7 @@ end)
 -- Setup Mason (LSP installer)
 require('mason').setup({})
 require('mason-lspconfig').setup({
-    ensure_installed = {'zls', 'clangd', 'cmake', 'ols', 'omnisharp'},
+    ensure_installed = { 'zls', 'clangd', 'cmake', 'ols', 'omnisharp', 'lua_ls' },
     handlers = {
         lsp_zero.default_setup,
         zls = function()
@@ -30,14 +30,14 @@ require('mason-lspconfig').setup({
             require('lspconfig').clangd.setup({
                 cmd = { "clangd" },
                 init_options = {
-                compilationDatabasePath = "build",
-                fallbackFlags = { "-std=c++20" },
-        },
+                    compilationDatabasePath = "build",
+                    fallbackFlags = { "-std=c++20" },
+                },
             })
         end,
         cmake = function()
             require('lspconfig').cmake.setup({
-                
+
             })
         end,
         ols = function()
@@ -49,7 +49,22 @@ require('mason-lspconfig').setup({
             require('lspconfig').omnisharp.setup({
 
             })
-        end
+        end,
+        lua_ls = function()
+            require('lspconfig').lua_ls.setup({
+                settings = {
+                    Lua = {
+                        runtime = { version = "LuaJIT" },
+                        workspace = {
+                            library = vim.api.nvim_get_runtime_file("", true),
+                        },
+                        diagnostics = {
+                            globals = { "vim" },
+                        },
+                    }
+                }
+            })
+        end,
     },
 })
 
@@ -58,11 +73,11 @@ local cmp = require('cmp')
 
 cmp.setup({
     sources = {
-        {name = 'path'},
-        {name = 'nvim_lsp'},
-        {name = 'nvim_lua'},
-        {name = 'buffer', keyword_length = 3},
-        {name = 'luasnip', keyword_length = 2},
+        { name = 'path' },
+        { name = 'nvim_lsp' },
+        { name = 'nvim_lua' },
+        { name = 'buffer',  keyword_length = 3 },
+        { name = 'luasnip', keyword_length = 2 },
     },
     mapping = cmp.mapping.preset.insert({
         ['<C-p>'] = cmp.mapping.select_prev_item(),

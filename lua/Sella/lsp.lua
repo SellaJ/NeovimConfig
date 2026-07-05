@@ -1,89 +1,112 @@
-local lsp_zero = require('lsp-zero')
+-- ============================================================================
+--  LSP + native completion  (Neovim 0.12, no lsp-zero, no nvim-cmp)
+-- ============================================================================
+--
+--  IMPORTANT for your C++/Vulkan project:
+--  clangd cannot find your #define macros, include paths, or compiler flags
+--  unless it can read a `compile_commands.json` (a "compilation database").
+--  Your config points clangd at `build/compile_commands.json` (see below).
+--  Generate it once from your project root with:
+--
+--      cmake -S . -B build -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+--
+--  Or make it permanent by adding this line to your CMakeLists.txt:
+--
+--      set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+--
+--  Re-run CMake whenever you add files or change flags so clangd stays in sync.
+-- ----------------------------------------------------------------------------
 
-lsp_zero.on_attach(function(client, bufnr)
-    local opts = { buffer = bufnr, remap = false }
+-- ---------------------------------------------------------------------------
+--  1. Native insert-mode completion options  (NEW: required on 0.12)
+-- ---------------------------------------------------------------------------
+-- On 0.12 the built-in autocomplete is gated behind this option. Without it
+-- vim.lsp.completion.enable() registers the source but the popup never shows
+-- automatically as you type. This is the fix for "no autocomplete".
+vim.o.autocomplete = true
 
-    vim.keymap.set("n", "gd", function() vim.lsp.buf.definition() end, opts)
-    vim.keymap.set("n", "gri", function() vim.lsp.buf.implementation() end, opts)
-    vim.keymap.set("n", "K", function() vim.lsp.buf.hover() end, opts)
-    vim.keymap.set("n", "<leader>vws", function() vim.lsp.buf.workspace_symbol() end, opts)
-    vim.keymap.set("n", "<leader>vd", function() vim.diagnostic.open_float() end, opts)
-    vim.keymap.set("n", "[d", function() vim.diagnostic.goto_next() end, opts)
-    vim.keymap.set("n", "]d", function() vim.diagnostic.goto_prev() end, opts)
-    vim.keymap.set("n", "<leader>vca", function() vim.lsp.buf.code_action() end, opts)
-    vim.keymap.set("n", "<leader>vrr", function() vim.lsp.buf.references() end, opts)
-    vim.keymap.set("n", "<leader>vrn", function() vim.lsp.buf.rename() end, opts)
-    vim.keymap.set("n", "<leader>fm", function() vim.lsp.buf.format() end, opts)
-    vim.keymap.set("i", "<C-h>", function() vim.lsp.buf.signature_help() end, opts)
-end)
+-- completeopt controls how the popup behaves:
+--   fuzzy    - fuzzy matching (so "vkdev" matches "vkCreateDevice"); without
+--              this, matching is strict from the start of the word.
+--   menuone  - show the menu even when there's only one match.
+--   noselect - don't auto-insert/select the first item (you pick with <C-y>).
+--   popup    - show extra info (docs/signature) for the selected item.
+vim.opt.completeopt = { "fuzzy", "menuone", "noselect", "popup" }
 
--- Setup Mason (LSP installer)
-require('mason').setup({})
-require('mason-lspconfig').setup({
-    ensure_installed = { 'zls', 'clangd', 'cmake', 'ols', 'omnisharp', 'lua_ls' },
-    handlers = {
-        lsp_zero.default_setup,
-        zls = function()
-            require('lspconfig').zls.setup({})
-        end,
-        clangd = function()
-            require('lspconfig').clangd.setup({
-                cmd = { "clangd" },
-                init_options = {
-                    compilationDatabasePath = "build",
-                    fallbackFlags = { "-std=c++20" },
-                },
-            })
-        end,
-        cmake = function()
-            require('lspconfig').cmake.setup({
+-- Don't spam "match 1 of 5" messages in the command line.
+vim.opt.shortmess:append("c")
 
-            })
-        end,
-        ols = function()
-            require('lspconfig').ols.setup({
+-- ---------------------------------------------------------------------------
+--  2. Per-buffer keymaps + completion, set when any LSP attaches
+-- ---------------------------------------------------------------------------
+vim.api.nvim_create_autocmd("LspAttach", {
+    group = vim.api.nvim_create_augroup("sella.lsp", { clear = true }),
+    callback = function(ev)
+        local opts = { buffer = ev.buf, remap = false }
 
-            })
-        end,
-        omnisharp = function()
-            require('lspconfig').omnisharp.setup({
+        -- Navigation / info
+        vim.keymap.set("n", "gd", vim.lsp.buf.definition, opts)
+        vim.keymap.set("n", "gri", vim.lsp.buf.implementation, opts)
+        vim.keymap.set("n", "K", vim.lsp.buf.hover, opts)
+        vim.keymap.set("n", "<leader>vws", vim.lsp.buf.workspace_symbol, opts)
 
-            })
-        end,
-        lua_ls = function()
-            require('lspconfig').lua_ls.setup({
-                settings = {
-                    Lua = {
-                        runtime = { version = "LuaJIT" },
-                        workspace = {
-                            library = vim.api.nvim_get_runtime_file("", true),
-                        },
-                        diagnostics = {
-                            globals = { "vim" },
-                        },
-                    }
-                }
-            })
-        end,
-    },
+        -- Diagnostics (note: open_float lives under vim.diagnostic, not buf)
+        vim.keymap.set("n", "<leader>vd", vim.diagnostic.open_float, opts)
+
+        -- Refactoring / actions
+        vim.keymap.set("n", "<leader>vca", vim.lsp.buf.code_action, opts)
+        vim.keymap.set("n", "<leader>vrr", vim.lsp.buf.references, opts)
+        vim.keymap.set("n", "<leader>vrn", vim.lsp.buf.rename, opts)
+        vim.keymap.set("n", "<leader>fm", function() vim.lsp.buf.format() end, opts)
+
+        -- Signature help while typing args (insert mode)
+        vim.keymap.set("i", "<C-h>", vim.lsp.buf.signature_help, opts)
+
+        -- Manually trigger the completion menu (handy when autotrigger hasn't fired)
+        vim.keymap.set("i", "<C-l>", function() vim.lsp.completion.get() end, opts)
+
+        -- Enable native LSP completion for this buffer
+        local client = vim.lsp.get_client_by_id(ev.data.client_id)
+        if client and client:supports_method("textDocument/completion") then
+            vim.lsp.completion.enable(true, client.id, ev.buf, { autotrigger = true })
+        end
+    end,
 })
 
--- Setup completion
-local cmp = require('cmp')
+-- ---------------------------------------------------------------------------
+--  3. Mason: installs the language server *binaries*
+-- ---------------------------------------------------------------------------
+require("mason").setup({})
 
-cmp.setup({
-    sources = {
-        { name = 'path' },
-        { name = 'nvim_lsp' },
-        { name = 'nvim_lua' },
-        { name = 'buffer',  keyword_length = 3 },
-        { name = 'luasnip', keyword_length = 2 },
+-- mason-lspconfig 2.x auto-enables (vim.lsp.enable) every server it installs,
+-- so you do NOT call vim.lsp.enable yourself. It only enables servers actually
+-- installed via Mason.
+require("mason-lspconfig").setup({
+    ensure_installed = { "zls", "clangd", "cmake", "ols", "omnisharp", "lua_ls", "slangd" },
+})
+
+-- ---------------------------------------------------------------------------
+--  4. Per-server overrides via native vim.lsp.config
+-- ---------------------------------------------------------------------------
+-- vim.lsp.config() MERGES your overrides on top of nvim-lspconfig's defaults
+-- (found in its lsp/ directory). Servers you don't list here (zls, cmake, ols,
+-- omnisharp) still work with their defaults.
+
+vim.lsp.config("clangd", {
+    cmd = { "clangd" },
+})
+
+vim.lsp.config("lua_ls", {
+    settings = {
+        Lua = {
+            runtime = { version = "LuaJIT" },
+            workspace = {
+                library = vim.api.nvim_get_runtime_file("", true),
+                checkThirdParty = false,
+            },
+            diagnostics = {
+                globals = { "vim" },
+            },
+        },
     },
-    mapping = cmp.mapping.preset.insert({
-        ['<C-p>'] = cmp.mapping.select_prev_item(),
-        ['<C-n>'] = cmp.mapping.select_next_item(),
-        ['<C-Space>'] = cmp.mapping.complete(),
-        ['<C-e>'] = cmp.mapping.abort(),
-        ['<CR>'] = cmp.mapping.confirm({ select = true }),
-    }),
 })

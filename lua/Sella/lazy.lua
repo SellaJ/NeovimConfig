@@ -1,3 +1,8 @@
+-- ============================================================================
+--  Plugin manager (lazy.nvim) + plugin list
+-- ============================================================================
+
+-- Bootstrap: clone lazy.nvim itself on first launch if it isn't present.
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 if not vim.loop.fs_stat(lazypath) then
     vim.fn.system({
@@ -9,45 +14,80 @@ end
 vim.opt.rtp:prepend(lazypath)
 
 require("lazy").setup({
-    -- telescope
-    { "nvim-telescope/telescope.nvim",   tag = "0.1.4",      dependencies = { "nvim-lua/plenary.nvim" } },
+    -- telescope (fuzzy finder)
+    -- Dropped the pinned `tag = "0.1.4"` so you track current releases.
+    -- plenary is its required dependency.
+    {
+        "nvim-telescope/telescope.nvim",
+        dependencies = { "nvim-lua/plenary.nvim" },
+    },
 
     -- colorscheme
     {
         "folke/tokyonight.nvim",
         priority = 1000,
-        config = function()
-            vim.cmd("colorscheme tokyonight-night")
-        end
+        opts = {
+            style = "moon",
+            on_colors = function(c)
+                c.bg = "#1a1b26"
+                c.bg_dark = "#16161e"
+                c.bg_float = "#1a1b26"
+                c.bg_sidebar = "#16161e"
+                c.bg_statusline = "#16161e"
+            end,
+        },
+        config = function(_, opts)
+            require("tokyonight").setup(opts)
+            vim.cmd.colorscheme("tokyonight-moon")
+        end,
     },
-    -- treesitter
-    { "nvim-treesitter/nvim-treesitter", build = ":TSUpdate" },
 
-    -- harpoon
-    { "theprimeagen/harpoon" },
+    -- file management
+    {
+        "stevearc/oil.nvim",
+        dependencies = { "nvim-tree/nvim-web-devicons" },
+        -- load on these so `nvim .` opens oil on a directory
+        lazy = false,
+        opts = {
+            delete_to_trash = false, -- no `trash` cmd on Windows by default
+            view_options = {
+                show_hidden = true,
+            },
+            keymaps = {
+                ["<C-h>"] = false, -- free up if it clashes with window nav
+            },
+        },
+        config = function(_, opts)
+            require("oil").setup(opts)
+            vim.keymap.set("n", "-", "<CMD>Oil<CR>", { desc = "Open parent directory" })
+        end,
+    },
+
+    -- treesitter
+    {
+        "nvim-treesitter/nvim-treesitter",
+        branch = "main",
+        build = ":TSUpdate",
+    },
+
+    --cmkae-tools
+    {
+        "Civitasv/cmake-tools.nvim"
+    },
 
     -- undotree
     { "mbbill/undotree" },
 
-    -- fugitive
+    -- fugitive (git)
     { "tpope/vim-fugitive" },
 
-    -- lsp
+    -- lsp: nvim-lspconfig provides server config DATA; mason installs the
+    -- server binaries; mason-lspconfig bridges the two and auto-enables them.
     {
-        "VonHeikemen/lsp-zero.nvim",
-        branch = "v3.x",
+        "neovim/nvim-lspconfig",
         dependencies = {
-            "neovim/nvim-lspconfig",
-            "williamboman/mason.nvim",
-            "williamboman/mason-lspconfig.nvim",
-            "hrsh7th/nvim-cmp",
-            "hrsh7th/cmp-buffer",
-            "hrsh7th/cmp-path",
-            "hrsh7th/cmp-nvim-lsp",
-            "hrsh7th/cmp-nvim-lua",
-            "L3MON4D3/LuaSnip",
-            "saadparwaiz1/cmp_luasnip",
-            "rafamadriz/friendly-snippets",
+            "mason-org/mason.nvim",
+            "mason-org/mason-lspconfig.nvim",
         },
     },
 })
